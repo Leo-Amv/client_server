@@ -6,21 +6,13 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Client {
-    private Socket client;
 
-    public Client(int port){
-        try {
-            this.client = new Socket("localhost",port);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public void start(){
+    public static void main(String[] args) throws IOException {
+        final Socket client = new Socket("localhost", Server.PORT);
+        // чтение
         new Thread(()->{
-            boolean flag = true;
             try(Scanner input = new Scanner(client.getInputStream())) {
-                while (flag){
+                while (true){
                     System.out.println(input.nextLine());
                 }
             } catch (IOException e) {
@@ -29,20 +21,20 @@ public class Client {
                 System.out.println("Client is disconnected");
             }
         }).start();
+        // запись
         new Thread(()->{
-            boolean flag = true;
             try(PrintWriter output = new PrintWriter(client.getOutputStream(),true)) {
                 Scanner consoleScanner = new Scanner(System.in);
-                while(flag){
+                while(true){
                     String consoleInput = consoleScanner.nextLine();
                     output.println(consoleInput);
                     if (consoleInput.equals("q")){
-                        flag = false;
                         client.close();
+                        break;
                     }
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                System.out.println("Client is disconnected");
             }
         }).start();
     }
